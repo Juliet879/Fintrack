@@ -1,104 +1,123 @@
 package com.julietgisemba.fintrack.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx. compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.julietgisemba.fintrack.model.QuickAddType
+import com.julietgisemba.fintrack.model.*
 import java.util.Date
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuickAddSheet(
     type: QuickAddType,
-    onDismiss: () -> Unit,
-    onSaveTransaction: ((amount: Double, category: String, title: String, note: String?, isIncome: Boolean) -> Unit)? = null,
-    onSaveBudget: ((category: String, limit: Double, isRecurring: Boolean) -> Unit)? = null,
-    onSaveGoal: ((title: String, target: Double, deadline: Date?) -> Unit)? = null
+    onSaveTransaction: (TransactionEntity) -> Unit = {},
+    onSaveGoal: (Goal) -> Unit = {},
+    onSaveBudget: (Budget) -> Unit = {},
+    onCancel: () -> Unit
 ) {
+    var amount by remember { mutableStateOf("") }
     var title by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
-    var amountText by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
+    var target by remember { mutableStateOf("") }
+    var limit by remember { mutableStateOf("") }
+
+    // Toggle for transaction type
+    var isIncome by remember { mutableStateOf(true) }
+
+    // Budget fields
+    var budgetType by remember { mutableStateOf(BudgetType.FIXED) }
     var isRecurring by remember { mutableStateOf(false) }
+    var startDate by remember { mutableStateOf<Date?>(null) }
+    var endDate by remember { mutableStateOf<Date?>(null) }
+
+    // Goal fields
+    var deadline by remember { mutableStateOf<Date?>(null) }
+    var isActive by remember { mutableStateOf(true) }
+
+    // For showing DatePicker
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val millis = datePickerState.selectedDateMillis
+                    if (millis != null) deadline = Date(millis)
+                    showDatePicker = false
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(16.dp)
     ) {
         Text(
-            when (type) {
-                is QuickAddType.Transaction -> "Add Transaction"
-                is QuickAddType.Budget -> "Add Budget"
-                is QuickAddType.Goal -> "Add Goal"
+            text = when (type) {
+                QuickAddType.INCOME, QuickAddType.EXPENSE -> "Add Transaction"
+                QuickAddType.GOAL -> "New Goal"
+                QuickAddType.BUDGET -> "New Budget"
             },
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            style = MaterialTheme.typography.titleLarge
         )
 
-        // Shared field for title where needed
-        if (type is QuickAddType.Transaction || type is QuickAddType.Goal) {
+        Spacer(Modifier.height(16.dp))
+
+        // --- Transaction fields ---
+        if (type == QuickAddType.INCOME || type == QuickAddType.EXPENSE) {
+            // Toggle (Income / Expense)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                FilterChip(
+                    selected = isIncome,
+                    onClick = { isIncome = true },
+                    label = { Text("Income") }
+                )
+                FilterChip(
+                    selected = !isIncome,
+                    onClick = { isIncome = false },
+                    label = { Text("Expense") }
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Title") },
                 modifier = Modifier.fillMaxWidth()
             )
-        }
-
-        // Category input (Transaction + Budget)
-        if (type is QuickAddType.Transaction || type is QuickAddType.Budget) {
             OutlinedTextField(
                 value = category,
                 onValueChange = { category = it },
                 label = { Text("Category") },
                 modifier = Modifier.fillMaxWidth()
             )
-        }
-
-        // Amount / Target input
-        OutlinedTextField(
-            value = amountText,
-            onValueChange = { amountText = it },
-            label = {
-                Text(
-                    when (type) {
-                        is QuickAddType.Transaction -> "Amount"
-                        is QuickAddType.Budget -> "Limit"
-                        is QuickAddType.Goal -> "Target Amount"
-                    }
-                )
-            },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        // Note (Transaction only)
-        if (type is QuickAddType.Transaction) {
+            OutlinedTextField(
+                value = amount,
+                onValueChange = { amount = it },
+                label = { Text("Amount") },
+                modifier = Modifier.fillMaxWidth()
+            )
             OutlinedTextField(
                 value = note,
                 onValueChange = { note = it },
@@ -107,74 +126,176 @@ fun QuickAddSheet(
             )
         }
 
-        // Recurring checkbox (Budget only)
-        if (type is QuickAddType.Budget) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = isRecurring, onCheckedChange = { isRecurring = it })
-                Text("Recurring Budget")
+        // --- Goal fields ---
+        if (type == QuickAddType.GOAL) {
+            OutlinedTextField(
+                value = title,
+                onValueChange = { title = it },
+                label = { Text("Goal Title") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = target,
+                onValueChange = { target = it },
+                label = { Text("Target Amount") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = deadline?.toString() ?: "",
+                onValueChange = {},
+                label = { Text("Deadline") },
+                readOnly = true,
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Pick date")
+                    }
+                }
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Checkbox(
+                    checked = isActive,
+                    onCheckedChange = { isActive = it }
+                )
+                Text("Active")
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceEvenly,
+        // Budget ----------------------------
+
+        if (type == QuickAddType.BUDGET) {
+            OutlinedTextField(
+                value = category,
+                onValueChange = { category = it },
+                label = { Text("Category") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = limit,
+                onValueChange = { limit = it },
+                label = { Text("Budget Limit") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(8.dp))
+        // Budget Type dropdown
+        var expanded by remember { mutableStateOf(false) }
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded }
+        ) {
+            OutlinedTextField(
+                value = budgetType.name,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Budget Type") },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                BudgetType.values().forEach { typeOption ->
+                    DropdownMenuItem(
+                        text = { Text(typeOption.name) },
+                        onClick = {
+                            budgetType = typeOption
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Checkbox(
+                checked = isRecurring,
+                onCheckedChange = { isRecurring = it }
+            )
+            Text("Recurring")
+        }
+
+        OutlinedTextField(
+            value = startDate?.toString() ?: "",
+            onValueChange = {},
+            label = { Text("Start Date") },
+            readOnly = true,
             modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = endDate?.toString() ?: "",
+            onValueChange = {},
+            label = { Text("End Date") },
+            readOnly = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+
+    Spacer(Modifier.height(16.dp))
+
+        // --- Buttons ---
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            when (type) {
-                is QuickAddType.Transaction -> {
-                    Button(
-                        onClick = {
-                            val amount = amountText.toDoubleOrNull()
-                            if (amount != null) {
-                                onSaveTransaction?.invoke(amount, category, title, note.takeIf { it.isNotBlank() }, true)
-                            }
-                            onDismiss()
-                        }
-                    ) { Text("Add Income") }
-
-                    Button(
-                        onClick = {
-                            val amount = amountText.toDoubleOrNull()
-                            if (amount != null) {
-                                onSaveTransaction?.invoke(amount, category, title, note.takeIf { it.isNotBlank() }, false)
-                            }
-                            onDismiss()
-                        }
-                    ) { Text("Add Expense") }
+            TextButton(onClick = onCancel, ) { Text("Cancel", color = Color(0xFF2C8A5B) )}
+            Button(onClick = {
+                when (type) {
+                    QuickAddType.INCOME, QuickAddType.EXPENSE -> {
+                        onSaveTransaction(
+                            TransactionEntity(
+                                title = title,
+                                date = Date(),
+                                category = category,
+                                amount = amount.toDoubleOrNull() ?: 0.0,
+                                isIncome = isIncome,
+                                type = if (isIncome) TransactionType.INCOME else TransactionType.EXPENSE,
+                                note = note.ifBlank { null }
+                            )
+                        )
+                    }
+                    QuickAddType.GOAL -> {
+                        onSaveGoal(
+                            Goal(
+                                title = title,
+                                target = target.toDoubleOrNull() ?: 0.0,
+                                saved = 0.0,
+                                deadline = null,
+                                isActive = true
+                            )
+                        )
+                    }
+                    QuickAddType.BUDGET -> {
+                        onSaveBudget(
+                            Budget(
+                                categoryName = category,
+                                limit = limit.toDoubleOrNull() ?: 0.0,
+                                spent = 0.0,
+                                type = BudgetType.FIXED,
+                                isRecurring = false,
+                                startDate = null,
+                                endDate = null
+                            )
+                        )
+                    }
                 }
-
-                is QuickAddType.Budget -> {
-                    Button(
-                        onClick = {
-                            val limit = amountText.toDoubleOrNull()
-                            if (limit != null) {
-                                onSaveBudget?.invoke(category, limit, isRecurring)
-                            }
-                            onDismiss()
-                        }
-                    ) { Text("Save Budget") }
-                }
-
-                is QuickAddType.Goal -> {
-                    Button(
-                        onClick = {
-                            val target = amountText.toDoubleOrNull()
-                            if (target != null) {
-                                onSaveGoal?.invoke(title, target, null) // You can later add a DatePicker for deadline
-                            }
-                            onDismiss()
-                        }
-                    ) { Text("Save Goal") }
-                }
+            },
+                colors = ButtonDefaults.buttonColors(Color(0xFF2C8A5B))
+            ) {
+                Text("Save")
             }
-        }
-
-        TextButton(
-            onClick = onDismiss,
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Text("Cancel")
         }
     }
 }
+

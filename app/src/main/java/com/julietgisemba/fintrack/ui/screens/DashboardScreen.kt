@@ -1,5 +1,6 @@
 package com.julietgisemba.fintrack.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,12 +23,16 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx. compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,8 +61,11 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen( viewmodel: FinanceViewModel = hiltViewModel()) {
-    var showQuickAdd by remember { mutableStateOf(false) }
+fun DashboardScreen( viewModel: FinanceViewModel = hiltViewModel()) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showSheet by remember { mutableStateOf(false) }
+    var currentType by remember { mutableStateOf(QuickAddType.EXPENSE) }
+    val transactions by viewModel.transactions.collectAsState()
 
     Scaffold(
         topBar = {
@@ -69,7 +77,10 @@ fun DashboardScreen( viewmodel: FinanceViewModel = hiltViewModel()) {
                 })
         }, containerColor = Color(0x54EFFBF6),
         floatingActionButton = {
-            FloatingActionButton(onClick = { showQuickAdd = true }) {
+            FloatingActionButton( onClick = { showSheet = true },
+                containerColor = Color(0xFF2C8A5B),
+                contentColor = Color.White
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Quick Add")
             }
         }
@@ -238,17 +249,35 @@ fun DashboardScreen( viewmodel: FinanceViewModel = hiltViewModel()) {
         }
     }
 
-    if (showQuickAdd) {
-        QuickAddSheet(
-            type = QuickAddType.Transaction,
-            onDismiss = { showQuickAdd = false },
-            onSaveTransaction = { amount, category, title, note, isIncome ->
-                if (isIncome) {
-                    viewmodel.addIncome(amount, category, title, note)
-                } else {
-                    viewmodel.addExpense(amount, category, title, note)
-                }
-            }
-        )
+    if (showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false },
+            sheetState = sheetState
+        ) {
+            QuickAddSheet(
+                type = currentType,
+                onSaveTransaction = { transaction ->
+                    if (transaction.isIncome) {
+                        viewModel.addIncome(transaction.amount, transaction.title, transaction.category, transaction.note)
+                    } else {
+                        viewModel.addExpense(transaction.amount, transaction.title, transaction.category, transaction.note)
+                    }
+                    showSheet = false
+                },
+                onSaveGoal = { goal ->
+                    viewModel.addGoal(goal.title, goal.target, goal.deadline)
+                    showSheet = false
+                },
+                onSaveBudget = { budget ->
+                    viewModel.addBudget(budget.categoryName, budget.limit, budget.type, budget.isRecurring, budget.startDate, budget.endDate)
+                    showSheet = false
+                },
+                onCancel = { showSheet = false }
+            )
+
+        }
+    }
+    LaunchedEffect(transactions) {
+        Log.d("DB_CHECK", "Transactions in DB: $transactions")
     }
 }

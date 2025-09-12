@@ -16,9 +16,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.julietgisemba.fintrack.model.TransactionEntity
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun TransactionItem(transactionEntity: TransactionEntity) {
+    val shortFormatter = SimpleDateFormat("MMM", Locale.getDefault())
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -28,7 +31,7 @@ fun TransactionItem(transactionEntity: TransactionEntity) {
         Spacer(Modifier.width(20.dp))
         Column {
             Text(transactionEntity.title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-            Text("${transactionEntity.date} - ${transactionEntity.category}", fontSize = 14.sp, fontWeight = FontWeight.Light)
+            Text("${transactionEntity.date.day} ${shortFormatter.format(transactionEntity.date)} - ${transactionEntity.category}", fontSize = 14.sp, fontWeight = FontWeight.Light)
         }
         Spacer(Modifier.weight(1f))
         Text("$${transactionEntity.amount}", fontSize = 16.sp, color = if (transactionEntity.isIncome) Color. Green else Color. Red, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End)

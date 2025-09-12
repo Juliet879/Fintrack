@@ -9,6 +9,8 @@ import com.julietgisemba.fintrack.model.Goal
 import com.julietgisemba.fintrack.model.TransactionEntity
 import com.julietgisemba.fintrack.model.TransactionType
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Date
 import javax.inject.Inject
@@ -17,6 +19,9 @@ import javax.inject.Inject
 class FinanceViewModel @Inject constructor(
     private val repository: FinanceRepository
 ) : ViewModel() {
+
+    val transactions = repository.getTransactions()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun addIncome(
         amount: Double,

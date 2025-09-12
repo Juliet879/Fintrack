@@ -6,6 +6,7 @@ import com.julietgisemba.fintrack.data.dao.TransactionDao
 import com.julietgisemba.fintrack.model.Budget
 import com.julietgisemba.fintrack.model.Goal
 import com.julietgisemba.fintrack.model.TransactionEntity
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,7 +19,7 @@ class FinanceRepository @Inject constructor(private val transactionDao: Transact
     suspend fun updateBudget(category: String, amount: Double) = budgetDao.updateBudgetSpent(category, amount)
     suspend fun updateGoal(goalId: Int, amount: Double) = goalDao.updateGoalProgress(goalId, amount)
 
-    suspend fun getTransactions() = transactionDao.getAllTransactions()
+    fun getTransactions(): Flow<List<TransactionEntity>> = transactionDao.getAllTransactions()
     suspend fun getBudgets() = budgetDao.getBudgets()
     suspend fun getGoals() = goalDao.getGoals()
 

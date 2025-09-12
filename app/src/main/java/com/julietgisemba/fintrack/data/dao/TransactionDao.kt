@@ -4,6 +4,7 @@ import androidx.room.*
 import com.julietgisemba.fintrack.model.Budget
 import com.julietgisemba.fintrack.model.Goal
 import com.julietgisemba.fintrack.model.TransactionEntity
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TransactionDao {
@@ -11,7 +12,8 @@ interface TransactionDao {
     suspend fun insertTransaction(transactionEntity: TransactionEntity)
 
     @Query("SELECT * FROM transactions ORDER BY date DESC")
-    suspend fun getAllTransactions(): List<TransactionEntity>
+    fun getAllTransactions(): Flow<List<TransactionEntity>>
+
 }
 
 @Dao

@@ -2,6 +2,9 @@ package com.julietgisemba.fintrack.data.di
 
 import android.content.Context
 import androidx.room.Room
+import com.julietgisemba.fintrack.data.dao.BudgetDao
+import com.julietgisemba.fintrack.data.dao.GoalDao
+import com.julietgisemba.fintrack.data.dao.TransactionDao
 import com.julietgisemba.fintrack.data.database.FinanceDatabase
 import dagger.Module
 import dagger.Provides
@@ -21,11 +24,11 @@ object AppModule {
             .build()
 
     @Provides
-    fun provideTransactionDao(db: FinanceDatabase) = db.transactionDao()
+    fun provideTransactionDao(db: FinanceDatabase): TransactionDao = db.transactionDao()
 
     @Provides
-    fun provideBudgetDao(db: FinanceDatabase) = db.budgetDao()
+    fun provideBudgetDao(db: FinanceDatabase): BudgetDao = db.budgetDao()
 
     @Provides
-    fun provideGoalDao(db: FinanceDatabase) = db.goalDao()
+    fun provideGoalDao(db: FinanceDatabase): GoalDao = db.goalDao()
 }
