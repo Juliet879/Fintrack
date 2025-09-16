@@ -51,39 +51,36 @@ fun GoalsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
     var currentType by remember { mutableStateOf(QuickAddType.GOAL) }
-    val transactions by viewModel.transactions.collectAsState()
+    val goals by viewModel.goalList.collectAsState()
 
-    val goals = listOf(
-        Goal(
-            title = "Vacation to Bali",
-            saved = 500.0,
-            target = 1500.0,
-            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2025-12-31"),
-            isActive = true
-        ),
-        Goal(
-            title = "New Laptop",
-            saved = 800.0,
-            target = 2000.0,
-            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2025-11-30"),
-            isActive = true
-        ),
-        Goal(
-            title = "Emergency Fund",
-            saved = 1200.0,
-            target = 5000.0,
-            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2026-09-01"),
-            isActive = true
-        ),
-        Goal(
-            title = "Car Down Payment",
-            saved = 2500.0,
-            target = 10000.0,
-            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2026-05-01"),
-            isActive = true
-        )
-    )
-
+//        Goal(
+//            title = "Vacation to Bali",
+//            saved = 500.0,
+//            target = 1500.0,
+//            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2025-12-31"),
+//            isActive = true
+//        ),
+//        Goal(
+//            title = "New Laptop",
+//            saved = 800.0,
+//            target = 2000.0,
+//            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2025-11-30"),
+//            isActive = true
+//        ),
+//        Goal(
+//            title = "Emergency Fund",
+//            saved = 1200.0,
+//            target = 5000.0,
+//            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2026-09-01"),
+//            isActive = true
+//        ),
+//        Goal(
+//            title = "Car Down Payment",
+//            saved = 2500.0,
+//            target = 10000.0,
+//            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2026-05-01"),
+//            isActive = true
+//        )
 
     val emergencyFund = Goal("Emergency Fund", saved = 3600.0, target = 5000.0)
 
@@ -102,7 +99,8 @@ fun GoalsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
             })
         }, containerColor = Color(0x54EFFBF6),
         floatingActionButton = {
-            FloatingActionButton( onClick = { showSheet = true },
+            FloatingActionButton(
+                onClick = { showSheet = true },
                 containerColor = Color(0xFF2C8A5B),
                 contentColor = Color.White
             ) {
@@ -110,7 +108,9 @@ fun GoalsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
             }
         }
     ) { innerPadding ->
-        Column(modifier = Modifier.padding(15.dp, 0.dp).padding(innerPadding)) {
+        Column(modifier = Modifier
+            .padding(15.dp, 0.dp)
+            .padding(innerPadding)) {
             HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
             Spacer(Modifier.height(10.dp))
 
@@ -119,7 +119,7 @@ fun GoalsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                 border = BorderStroke(0.4.dp, Color.Gray),
                 modifier = Modifier
             ) {
-                    GoalItem(goal =  emergencyFund, icon = Icons.Default.DateRange, showActions = true)
+                GoalItem(goal = emergencyFund, icon = Icons.Default.DateRange, showActions = true)
             }
 
             Spacer(Modifier.height(20.dp))
@@ -136,7 +136,8 @@ fun GoalsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                     items(goals) { goal ->
                         GoalItem(
                             goal = goal,
-                            icon = Icons.Default.DateRange)
+                            icon = Icons.Default.DateRange
+                        )
 
                     }
                 }
@@ -152,27 +153,34 @@ fun GoalsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
             QuickAddSheet(
                 type = currentType,
                 onSaveTransaction = { transaction ->
-                    if (transaction.isIncome) {
-                        viewModel.addIncome(transaction.amount, transaction.title, transaction.category, transaction.note)
-                    } else {
-                        viewModel.addExpense(transaction.amount, transaction.title, transaction.category, transaction.note)
-                    }
+                    viewModel.addTransaction(
+                        transaction.amount,
+                        transaction.title,
+                        transaction.category,
+                        transaction.type,
+                        transaction.note
+                    )
                     showSheet = false
                 },
                 onSaveGoal = { goal ->
-                    viewModel.addGoal(goal.title, goal.target, goal.deadline)
+                    viewModel.addGoal(goal.title, goal.target, goal.saved, goal.deadline)
                     showSheet = false
                 },
                 onSaveBudget = { budget ->
-                    viewModel.addBudget(budget.categoryName, budget.limit, budget.type, budget.isRecurring, budget.startDate, budget.endDate)
+                    viewModel.addBudget(
+                        budget.categoryName,
+                        budget.limit,
+                        budget.spent,
+                        budget.type,
+                        budget.isRecurring,
+                        budget.startDate,
+                        budget.endDate
+                    )
                     showSheet = false
                 },
                 onCancel = { showSheet = false }
             )
 
         }
-    }
-    LaunchedEffect(transactions) {
-        Log.d("DB_CHECK", "Transactions in DB: $transactions")
     }
 }

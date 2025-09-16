@@ -13,14 +13,15 @@ import javax.inject.Singleton
 @Singleton
 class FinanceRepository @Inject constructor(private val transactionDao: TransactionDao, private val budgetDao: BudgetDao, private val goalDao: GoalDao) {
     suspend fun addTransaction(transactionEntity: TransactionEntity) = transactionDao.insertTransaction(transactionEntity)
+    suspend fun updateTransaction(transactionEntity: TransactionEntity) = transactionDao.insertTransaction(transactionEntity)
     suspend fun addBudget(budget: Budget) = budgetDao.insertBudget(budget)
     suspend fun addGoal(goal: Goal) = goalDao.insertGoal(goal)
 
-    suspend fun updateBudget(category: String, amount: Double) = budgetDao.updateBudgetSpent(category, amount)
-    suspend fun updateGoal(goalId: Int, amount: Double) = goalDao.updateGoalProgress(goalId, amount)
+    suspend fun updateBudget(budget: Budget) = budgetDao.updateBudget(budget)
+    suspend fun updateGoal(goal: Goal) = goalDao.updateGoal(goal)
 
     fun getTransactions(): Flow<List<TransactionEntity>> = transactionDao.getAllTransactions()
-    suspend fun getBudgets() = budgetDao.getBudgets()
-    suspend fun getGoals() = goalDao.getGoals()
+    fun getBudgets(): Flow<List<Budget>> = budgetDao.getBudgets()
+    fun getGoals() : Flow<List<Goal>> = goalDao.getGoals()
 
 }

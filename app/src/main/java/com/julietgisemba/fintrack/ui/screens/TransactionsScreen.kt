@@ -1,5 +1,6 @@
 package com.julietgisemba.fintrack.ui.screens
 
+import android.R.attr.onClick
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -18,11 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DividerDefaults
@@ -57,8 +54,6 @@ import com.julietgisemba.fintrack.ui.components.BalanceSummaryItem
 import com.julietgisemba.fintrack.ui.components.QuickAddSheet
 import com.julietgisemba.fintrack.ui.components.TransactionItem
 import com.julietgisemba.fintrack.viewmodel.FinanceViewModel
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +62,8 @@ fun TransactionsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
     var showSheet by remember { mutableStateOf(false) }
     var currentType by remember { mutableStateOf(QuickAddType.EXPENSE) }
     val transactions by viewModel.transactions.collectAsState()
+    var editingTransaction by remember { mutableStateOf<TransactionEntity?>(null) }
+
 
     Scaffold(
         topBar = {
@@ -96,41 +93,14 @@ fun TransactionsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
     ) { innerPadding ->
 
         var selectedFilter by remember { mutableStateOf("All") }
-        val transactionEntities = listOf(
-            TransactionEntity(
-                title = "Groceries",
-                date = SimpleDateFormat("MMM dd", Locale.getDefault()).parse("Aug 18")!!,
-                category = "Food",
-                amount = -54.20,
-                isIncome = false,
-                type = TransactionType.EXPENSE
-            ),
-            TransactionEntity(
-                title = "Salary",
-                date = SimpleDateFormat("MMM dd", Locale.getDefault()).parse("Aug 15")!!,
-                category = "Income",
-                amount = 2800.00,
-                isIncome = true,
-                type = TransactionType.INCOME
-            ),
-            TransactionEntity(
-                title = "Transport",
-                date = SimpleDateFormat("MMM dd", Locale.getDefault()).parse("Aug 14")!!,
-                category = "Commute",
-                amount = -18.60,
-                isIncome = false,
-                type = TransactionType.EXPENSE
-
-            )
-        )
 
         val filteredTransaction = when (selectedFilter) {
-            "Income" -> transactionEntities.filter { it.type == TransactionType.INCOME }
-            "Expense" -> transactionEntities.filter { it.type == TransactionType.EXPENSE }
-            else -> transactionEntities
+            "Income" -> transactions.filter { it.type == TransactionType.INCOME }
+            "Expense" -> transactions.filter { it.type == TransactionType.EXPENSE }
+            else -> transactions
         }
-        val totalIncome = transactionEntities.filter { it.isIncome }.sumOf() { it.amount }
-        val totalExpense = transactionEntities.filter { !it.isIncome }.sumOf() { it.amount }
+        val totalIncome = transactions.filter { it.isIncome }.sumOf() { it.amount }
+        val totalExpense = transactions.filter { !it.isIncome }.sumOf() { it.amount }
         val totalNet = totalIncome + totalExpense
 
 
@@ -201,7 +171,11 @@ fun TransactionsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
 //                            Divider()
                         }
                         items(items) { transaction ->
-                            TransactionItem(transaction)
+                            TransactionItem(transaction, onClick = {
+                                editingTransaction = transaction
+                                currentType = if (transaction.isIncome) QuickAddType.INCOME else QuickAddType.EXPENSE
+                                showSheet = true
+                            })
                         }
                     }
                 }
@@ -218,19 +192,26 @@ fun TransactionsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
             QuickAddSheet(
                 type = currentType,
                 onSaveTransaction = { transaction ->
-                    if (transaction.isIncome) {
-                        viewModel.addIncome(transaction.amount, transaction.title, transaction.category, transaction.note)
+                    if (editingTransaction != null) {
+                        viewModel.updateTransaction(transaction.copy(id = editingTransaction!!.id))
                     } else {
-                        viewModel.addExpense(transaction.amount, transaction.title, transaction.category, transaction.note)
+                        viewModel.addTransaction(
+                            transaction.amount,
+                            transaction.title,
+                            transaction.category,
+                            transaction.type,
+                            transaction.note
+                        )
                     }
+                    editingTransaction = null
                     showSheet = false
                 },
                 onSaveGoal = { goal ->
-                    viewModel.addGoal(goal.title, goal.target, goal.deadline)
+                    viewModel.addGoal(goal.title, goal.target, goal.saved, goal.deadline)
                     showSheet = false
                 },
                 onSaveBudget = { budget ->
-                    viewModel.addBudget(budget.categoryName, budget.limit, budget.type, budget.isRecurring, budget.startDate, budget.endDate)
+                    viewModel.addBudget(budget.categoryName, budget.limit, budget.spent,budget.type, budget.isRecurring, budget.startDate, budget.endDate)
                     showSheet = false
                 },
                 onCancel = { showSheet = false }
@@ -267,8 +248,4 @@ fun CustomFilterChip(
         }
 
     }
-}
-
-@Composable
-fun BalanceSection() {
 }

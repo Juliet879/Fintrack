@@ -22,88 +22,81 @@ class FinanceViewModel @Inject constructor(
 
     val transactions = repository.getTransactions()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val budgetList = repository.getBudgets()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val goalList = repository.getGoals()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addIncome(
+    fun addTransaction(
         amount: Double,
         title: String = "Income",
         category: String = "General",
+        type: TransactionType,
         note: String? = null
     ) {
+        val transaction = TransactionEntity(
+            title = title,
+            date = Date(),
+            category = category,
+            amount = amount,
+            isIncome = true,
+            note = note,
+            type = type
+        )
         viewModelScope.launch {
-            repository.addTransaction(
-                TransactionEntity(
-                    title = title,
-                    date = Date(),
-                    category = category,
-                    amount = amount,
-                    isIncome = true,
-                    note = note,
-                    type = TransactionType.INCOME
-                )
-            )
+            repository.addTransaction(transaction)
         }
     }
 
-    fun addExpense(
-        amount: Double,
-        title: String,
-        category: String,
-        note: String? = null
-    ) {
+    fun updateTransaction(transaction: TransactionEntity) {
         viewModelScope.launch {
-            repository.addTransaction(
-                TransactionEntity(
-                    title = title,
-                    date = Date(),
-                    category = category,
-                    amount = amount,
-                    isIncome = false,
-                    note = note,
-                    type = TransactionType.EXPENSE
-                )
-            )
-            repository.updateBudget(category, amount)
+            repository.updateTransaction(transaction)
         }
     }
 
     fun addGoal(
-        title: String,
-        target: Double,
-        deadline: Date? = null
+        title: String, target: Double, saved: Double = 0.0, deadline: Date? = null
     ) {
+        val goal = Goal(
+            title = title, target = target, saved = saved, deadline = deadline, isActive = true
+        )
         viewModelScope.launch {
-            repository.addGoal(
-                Goal(
-                    title = title,
-                    target = target,
-                    saved = 0.0,
-                    deadline = deadline,
-                    isActive = true
-                )
-            )
+            repository.addGoal(goal)
+        }
+    }
+
+    fun updateGoal( goal: Goal) {
+        viewModelScope.launch {
+            repository.updateGoal(goal)
         }
     }
 
     fun addBudget(
         categoryName: String,
         limit: Double,
+        spent: Double,
         type: BudgetType,
         isRecurring: Boolean = false,
         startDate: Date? = null,
         endDate: Date? = null
     ) {
+        val budget = Budget(
+            categoryName = categoryName,
+            limit = limit,
+            spent = spent,
+            type = type,
+            isRecurring = isRecurring,
+            startDate = startDate,
+            endDate = endDate
+        )
         viewModelScope.launch {
-            repository.addBudget(
-                Budget(
-                    categoryName = categoryName,
-                    limit = limit,
-                    spent = 0.0,
-                    type = type,
-                    isRecurring = isRecurring,
-                    startDate = startDate,
-                    endDate = endDate
-                )
-            )
+            repository.addBudget(budget)
+        }
+    }
+
+    fun updateBudget( budget: Budget) {
+        viewModelScope.launch {
+            repository.updateBudget(budget)
         }
     }
 }

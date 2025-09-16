@@ -21,5 +21,4 @@ data class Budget(
     @Ignore
     val icon: ImageVector = CategoryIconMapper.getIcon(categoryName)
 }
-enum class BudgetPeriod { WEEKLY, MONTHLY, YEARLY }
 enum class BudgetType { FIXED, UPCOMING }

@@ -11,6 +11,9 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTransaction(transactionEntity: TransactionEntity)
 
+    @Update
+    suspend fun updateTransaction(transactionEntity: TransactionEntity)
+
     @Query("SELECT * FROM transactions ORDER BY date DESC")
     fun getAllTransactions(): Flow<List<TransactionEntity>>
 
@@ -21,11 +24,11 @@ interface BudgetDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBudget(budget: Budget)
 
-    @Query("UPDATE budgets SET spent = spent + :amount WHERE categoryName = :category")
-    suspend fun updateBudgetSpent(category: String, amount: Double)
+    @Update
+    suspend fun updateBudget(budget: Budget)
 
     @Query("SELECT * FROM budgets")
-    suspend fun getBudgets(): List<Budget>
+    fun getBudgets(): Flow<List<Budget>>
 }
 
 @Dao
@@ -33,9 +36,9 @@ interface GoalDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertGoal(goal: Goal)
 
-    @Query("UPDATE goals SET saved = saved + :amount WHERE id = :goalId")
-    suspend fun updateGoalProgress(goalId: Int, amount: Double)
+    @Update
+    suspend fun updateGoal(goal: Goal)
 
     @Query("SELECT * FROM goals")
-    suspend fun getGoals(): List<Goal>
+    fun getGoals(): Flow<List<Goal>>
 }

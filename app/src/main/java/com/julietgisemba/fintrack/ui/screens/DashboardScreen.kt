@@ -33,7 +33,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx. compose.runtime.getValue
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,11 +61,12 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen( viewModel: FinanceViewModel = hiltViewModel()) {
+fun DashboardScreen(viewModel: FinanceViewModel = hiltViewModel()) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
     var currentType by remember { mutableStateOf(QuickAddType.EXPENSE) }
     val transactions by viewModel.transactions.collectAsState()
+    var editingTransaction by remember { mutableStateOf<TransactionEntity?>(null) }
 
     Scaffold(
         topBar = {
@@ -77,7 +78,8 @@ fun DashboardScreen( viewModel: FinanceViewModel = hiltViewModel()) {
                 })
         }, containerColor = Color(0x54EFFBF6),
         floatingActionButton = {
-            FloatingActionButton( onClick = { showSheet = true },
+            FloatingActionButton(
+                onClick = { showSheet = true },
                 containerColor = Color(0xFF2C8A5B),
                 contentColor = Color.White
             ) {
@@ -113,7 +115,6 @@ fun DashboardScreen( viewModel: FinanceViewModel = hiltViewModel()) {
             )
         )
 
-
         val budgets = listOf(
             Budget(
                 categoryName = "Groceries",
@@ -145,7 +146,7 @@ fun DashboardScreen( viewModel: FinanceViewModel = hiltViewModel()) {
             )
         )
 
-        val goals =  listOf(
+        val goals = listOf(
             Goal(
                 title = "Emergency Fund",
                 saved = 3600.0,
@@ -206,7 +207,12 @@ fun DashboardScreen( viewModel: FinanceViewModel = hiltViewModel()) {
             ) {
                 Column {
                     transactionEntities.take(3).forEach { transaction ->
-                        TransactionItem(transaction)
+                        TransactionItem(transaction,
+                            onClick = {
+                                editingTransaction = transaction
+                                currentType = if (transaction.isIncome) QuickAddType.INCOME else QuickAddType.EXPENSE
+                                showSheet = true
+                        })
                     }
                 }
             }
@@ -224,7 +230,7 @@ fun DashboardScreen( viewModel: FinanceViewModel = hiltViewModel()) {
                         BudgetItem(
                             budget.icon,
                             budget.categoryName,
-                            budget. spent,
+                            budget.spent,
                             budget.limit,
                             (budget.spent / budget.limit).toFloat()
                         )
@@ -257,19 +263,29 @@ fun DashboardScreen( viewModel: FinanceViewModel = hiltViewModel()) {
             QuickAddSheet(
                 type = currentType,
                 onSaveTransaction = { transaction ->
-                    if (transaction.isIncome) {
-                        viewModel.addIncome(transaction.amount, transaction.title, transaction.category, transaction.note)
-                    } else {
-                        viewModel.addExpense(transaction.amount, transaction.title, transaction.category, transaction.note)
-                    }
+                    viewModel.addTransaction(
+                        transaction.amount,
+                        transaction.title,
+                        transaction.category,
+                        transaction.type,
+                        transaction.note
+                    )
                     showSheet = false
                 },
                 onSaveGoal = { goal ->
-                    viewModel.addGoal(goal.title, goal.target, goal.deadline)
+                    viewModel.addGoal(goal.title, goal.target, goal.saved, goal.deadline)
                     showSheet = false
                 },
                 onSaveBudget = { budget ->
-                    viewModel.addBudget(budget.categoryName, budget.limit, budget.type, budget.isRecurring, budget.startDate, budget.endDate)
+                    viewModel.addBudget(
+                        budget.categoryName,
+                        budget.limit,
+                        budget.spent,
+                        budget.type,
+                        budget.isRecurring,
+                        budget.startDate,
+                        budget.endDate
+                    )
                     showSheet = false
                 },
                 onCancel = { showSheet = false }

@@ -1,5 +1,6 @@
 package com.julietgisemba.fintrack.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,20 +21,30 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 @Composable
-fun TransactionItem(transactionEntity: TransactionEntity) {
-    val shortFormatter = SimpleDateFormat("MMM", Locale.getDefault())
-    Row(
+fun TransactionItem(
+    transaction: TransactionEntity,
+    onClick: (TransactionEntity) -> Unit
+) {
+    androidx.compose.material3.Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp)
+            .padding(vertical = 4.dp, horizontal = 8.dp)
+            .clickable { onClick(transaction) }, // 👈 make item clickable
+        shape = RoundedCornerShape(8.dp)
     ) {
-        Icon(transactionEntity.icon, contentDescription = "")
-        Spacer(Modifier.width(20.dp))
-        Column {
-            Text(transactionEntity.title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-            Text("${transactionEntity.date.day} ${shortFormatter.format(transactionEntity.date)} - ${transactionEntity.category}", fontSize = 14.sp, fontWeight = FontWeight.Light)
+        Row(
+            modifier = Modifier
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text(text = transaction.title, style = MaterialTheme.typography.bodyLarge)
+                Text(text = transaction.category, style = MaterialTheme.typography.bodyMedium)
+            }
+            Text(
+                text = "${transaction.amount}",
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
-        Spacer(Modifier.weight(1f))
-        Text("$${transactionEntity.amount}", fontSize = 16.sp, color = if (transactionEntity.isIncome) Color. Green else Color. Red, fontWeight = FontWeight.SemiBold, textAlign = TextAlign.End)
     }
 }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +26,9 @@ fun QuickAddSheet(
     var category by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
     var target by remember { mutableStateOf("") }
+    var saved by remember { mutableStateOf("") }
     var limit by remember { mutableStateOf("") }
+    var spent by remember { mutableStateOf("") }
 
     // Toggle for transaction type
     var isIncome by remember { mutableStateOf(true) }
@@ -61,6 +64,34 @@ fun QuickAddSheet(
             DatePicker(state = datePickerState)
         }
     }
+
+    var datePickerTarget by remember { mutableStateOf(DatePickerTarget.NONE) }
+
+    if (datePickerTarget != DatePickerTarget.NONE) {
+        DatePickerDialog(
+            onDismissRequest = { datePickerTarget = DatePickerTarget.NONE },
+            confirmButton = {
+                TextButton(onClick = {
+                    val millis = datePickerState.selectedDateMillis
+                    if (millis != null) {
+                        when (datePickerTarget) {
+                            DatePickerTarget.DEADLINE -> deadline = Date(millis)
+                            DatePickerTarget.START -> startDate = Date(millis)
+                            DatePickerTarget.END -> endDate = Date(millis)
+                            else -> {}
+                        }
+                    }
+                    datePickerTarget = DatePickerTarget.NONE
+                }) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { datePickerTarget = DatePickerTarget.NONE }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
 
 
     Column(
@@ -141,6 +172,13 @@ fun QuickAddSheet(
                 modifier = Modifier.fillMaxWidth()
             )
 
+            OutlinedTextField(
+                value = saved,
+                onValueChange = { saved = it },
+                label = { Text("Saved Amount") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
             Spacer(Modifier.height(8.dp))
 
             OutlinedTextField(
@@ -181,6 +219,12 @@ fun QuickAddSheet(
                 value = limit,
                 onValueChange = { limit = it },
                 label = { Text("Budget Limit") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = spent,
+                onValueChange = { spent = it },
+                label = { Text("Budget Spent") },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -225,20 +269,29 @@ fun QuickAddSheet(
             )
             Text("Recurring")
         }
-
         OutlinedTextField(
             value = startDate?.toString() ?: "",
             onValueChange = {},
             label = { Text("Start Date") },
             readOnly = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                IconButton(onClick = { datePickerTarget = DatePickerTarget.START }) {
+                    Icon(Icons.Default.DateRange, contentDescription = "Pick date")
+                }
+            }
         )
         OutlinedTextField(
             value = endDate?.toString() ?: "",
             onValueChange = {},
             label = { Text("End Date") },
             readOnly = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+                IconButton(onClick = { showDatePicker = true }) {
+                    Icon(Icons.Default.DateRange, contentDescription = "Pick date")
+                }
+            }
         )
     }
 
@@ -270,7 +323,7 @@ fun QuickAddSheet(
                             Goal(
                                 title = title,
                                 target = target.toDoubleOrNull() ?: 0.0,
-                                saved = 0.0,
+                                saved = saved.toDoubleOrNull() ?: 0.0,
                                 deadline = null,
                                 isActive = true
                             )
@@ -281,11 +334,11 @@ fun QuickAddSheet(
                             Budget(
                                 categoryName = category,
                                 limit = limit.toDoubleOrNull() ?: 0.0,
-                                spent = 0.0,
-                                type = BudgetType.FIXED,
-                                isRecurring = false,
-                                startDate = null,
-                                endDate = null
+                                spent = spent.toDoubleOrNull() ?: 0.0,
+                                type = budgetType,
+                                isRecurring = isRecurring,
+                                startDate = startDate,
+                                endDate = endDate
                             )
                         )
                     }
@@ -298,4 +351,7 @@ fun QuickAddSheet(
         }
     }
 }
+
+enum class DatePickerTarget { NONE, DEADLINE, START, END }
+
 

@@ -32,7 +32,8 @@ fun GoalItem(
     showActions: Boolean = false, // Show buttons like Add Money / Plan
     compact: Boolean = false,     // For dashboard use
     onAddMoneyClick: (() -> Unit)? = null,
-    onPlanClick: (() -> Unit)? = null
+    onPlanClick: (() -> Unit)? = null,
+    onClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
