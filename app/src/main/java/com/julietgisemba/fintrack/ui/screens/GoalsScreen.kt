@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.julietgisemba.fintrack.model.Budget
 import com.julietgisemba.fintrack.model.Goal
 import com.julietgisemba.fintrack.model.QuickAddType
 import com.julietgisemba.fintrack.ui.components.GoalItem
@@ -52,35 +53,7 @@ fun GoalsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
     var showSheet by remember { mutableStateOf(false) }
     var currentType by remember { mutableStateOf(QuickAddType.GOAL) }
     val goals by viewModel.goalList.collectAsState()
-
-//        Goal(
-//            title = "Vacation to Bali",
-//            saved = 500.0,
-//            target = 1500.0,
-//            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2025-12-31"),
-//            isActive = true
-//        ),
-//        Goal(
-//            title = "New Laptop",
-//            saved = 800.0,
-//            target = 2000.0,
-//            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2025-11-30"),
-//            isActive = true
-//        ),
-//        Goal(
-//            title = "Emergency Fund",
-//            saved = 1200.0,
-//            target = 5000.0,
-//            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2026-09-01"),
-//            isActive = true
-//        ),
-//        Goal(
-//            title = "Car Down Payment",
-//            saved = 2500.0,
-//            target = 10000.0,
-//            deadline = SimpleDateFormat("yyyy-MM-dd").parse("2026-05-01"),
-//            isActive = true
-//        )
+    var editingGoal by remember { mutableStateOf<Goal?>(null) }
 
     val emergencyFund = Goal("Emergency Fund", saved = 3600.0, target = 5000.0)
 
@@ -136,7 +109,11 @@ fun GoalsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                     items(goals) { goal ->
                         GoalItem(
                             goal = goal,
-                            icon = Icons.Default.DateRange
+                            icon = Icons.Default.DateRange,
+                            onClick = {
+                                editingGoal = goal
+                                showSheet = true
+                            }
                         )
 
                     }
@@ -152,6 +129,7 @@ fun GoalsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
         ) {
             QuickAddSheet(
                 type = currentType,
+                editingGoal = editingGoal,
                 onSaveTransaction = { transaction ->
                     viewModel.addTransaction(
                         transaction.amount,
@@ -163,8 +141,14 @@ fun GoalsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                     showSheet = false
                 },
                 onSaveGoal = { goal ->
-                    viewModel.addGoal(goal.title, goal.target, goal.saved, goal.deadline)
+                    if (editingGoal != null) {
+                        // Update goal
+                        viewModel.updateGoal(goal)
+                    } else {
+                        viewModel.addGoal(goal.title, goal.target, goal.saved, goal.deadline)
+                    }
                     showSheet = false
+                    editingGoal = null
                 },
                 onSaveBudget = { budget ->
                     viewModel.addBudget(

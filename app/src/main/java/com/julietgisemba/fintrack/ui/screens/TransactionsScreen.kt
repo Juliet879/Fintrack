@@ -173,7 +173,6 @@ fun TransactionsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                         items(items) { transaction ->
                             TransactionItem(transaction, onClick = {
                                 editingTransaction = transaction
-                                currentType = if (transaction.isIncome) QuickAddType.INCOME else QuickAddType.EXPENSE
                                 showSheet = true
                             })
                         }
@@ -191,9 +190,10 @@ fun TransactionsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
         ) {
             QuickAddSheet(
                 type = currentType,
+                editingTransaction = editingTransaction,
                 onSaveTransaction = { transaction ->
                     if (editingTransaction != null) {
-                        viewModel.updateTransaction(transaction.copy(id = editingTransaction!!.id))
+                        viewModel.updateTransaction(transaction)
                     } else {
                         viewModel.addTransaction(
                             transaction.amount,

@@ -38,8 +38,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.julietgisemba.fintrack.model.Budget
 import com.julietgisemba.fintrack.model.BudgetType
 import com.julietgisemba.fintrack.model.QuickAddType
+import com.julietgisemba.fintrack.model.TransactionEntity
 import com.julietgisemba.fintrack.ui.components.BalanceSummaryItem
 import com.julietgisemba.fintrack.ui.components.BudgetItem
 import com.julietgisemba.fintrack.ui.components.QuickAddSheet
@@ -53,6 +55,8 @@ fun BudgetsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
     var showSheet by remember { mutableStateOf(false) }
     var currentType by remember { mutableStateOf(QuickAddType.BUDGET) }
     val budgets by viewModel.budgetList.collectAsState()
+    var editingBudget by remember { mutableStateOf<Budget?>(null) }
+
 
     val fixedBudgets = budgets.filter { it.type == BudgetType.FIXED }
     val upcomingBudgets = budgets.filter { it.type == BudgetType.UPCOMING }
@@ -125,6 +129,10 @@ fun BudgetsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                             (budget.spent / budget.limit).toFloat(),
                             false,
                             "$${(budget.limit - budget.spent).roundToInt()} left",
+                            onClick = {
+                                editingBudget = budget
+                                showSheet = true
+                            }
 
                             )
                     }
@@ -150,7 +158,10 @@ fun BudgetsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                             (budget.spent / budget.limit).toFloat(),
                             false,
                             "$${(budget.limit - budget.spent).roundToInt()} left",
-
+                            onClick = {
+                                editingBudget = budget
+                                showSheet = true
+                            }
                             )
                     }
                 }
@@ -163,7 +174,7 @@ fun BudgetsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
         ModalBottomSheet(
             onDismissRequest = { showSheet = false }, sheetState = sheetState
         ) {
-            QuickAddSheet(type = currentType, onSaveTransaction = { transaction ->
+            QuickAddSheet(type = currentType, editingBudget = editingBudget, onSaveTransaction = { transaction ->
                 viewModel.addTransaction(
                     transaction.amount,
                     transaction.title,
@@ -176,16 +187,22 @@ fun BudgetsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                 viewModel.addGoal(goal.title, goal.target, goal.saved, goal.deadline)
                 showSheet = false
             }, onSaveBudget = { budget ->
-                viewModel.addBudget(
-                    budget.categoryName,
-                    budget.limit,
-                    budget.spent,
-                    budget.type,
-                    budget.isRecurring,
-                    budget.startDate,
-                    budget.endDate
-                )
+                if (editingBudget != null) {
+                    // Add new
+                    viewModel.updateBudget(budget)
+                } else {
+                    viewModel.addBudget(
+                        budget.categoryName,
+                        budget.limit,
+                        budget.spent,
+                        budget.type,
+                        budget.isRecurring,
+                        budget.startDate,
+                        budget.endDate
+                    )
+                }
                 showSheet = false
+                editingBudget = null
             }, onCancel = { showSheet = false })
 
         }

@@ -19,48 +19,68 @@ fun QuickAddSheet(
     onSaveTransaction: (TransactionEntity) -> Unit = {},
     onSaveGoal: (Goal) -> Unit = {},
     onSaveBudget: (Budget) -> Unit = {},
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    editingTransaction: TransactionEntity? = null,
+    editingGoal: Goal? = null,
+    editingBudget: Budget? = null
 ) {
-    var amount by remember { mutableStateOf("") }
-    var title by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
-    var target by remember { mutableStateOf("") }
-    var saved by remember { mutableStateOf("") }
-    var limit by remember { mutableStateOf("") }
-    var spent by remember { mutableStateOf("") }
+    var amount by remember(editingTransaction, editingBudget) {
+        mutableStateOf(
+            editingTransaction?.amount?.toString() ?: editingBudget?.limit?.toString() ?: ""
+        )
+    }
+
+    var title by remember(editingTransaction, editingGoal) {
+        mutableStateOf(
+            editingTransaction?.title ?: editingGoal?.title ?: ""
+        )
+    }
+
+    var category by remember(editingTransaction, editingBudget) {
+        mutableStateOf(
+            editingTransaction?.category ?: editingBudget?.categoryName ?: ""
+        )
+    }
+
+    var note by remember(editingTransaction) {
+        mutableStateOf(
+            editingTransaction?.note ?: ""
+        )
+    }
+
+    var target by remember { mutableStateOf(editingGoal?.target?.toString() ?: "") }
+    var saved by remember { mutableStateOf(editingGoal?.saved?.toString() ?: "") }
+
+    var limit by remember { mutableStateOf(editingBudget?.limit?.toString() ?: "") }
+    var spent by remember { mutableStateOf(editingBudget?.spent?.toString() ?: "") }
 
     // Toggle for transaction type
-    var isIncome by remember { mutableStateOf(true) }
+    var isIncome by remember { mutableStateOf(editingTransaction?.isIncome ?: true) }
 
     // Budget fields
-    var budgetType by remember { mutableStateOf(BudgetType.FIXED) }
-    var isRecurring by remember { mutableStateOf(false) }
-    var startDate by remember { mutableStateOf<Date?>(null) }
-    var endDate by remember { mutableStateOf<Date?>(null) }
+    var budgetType by remember { mutableStateOf(editingBudget?.type ?: BudgetType.FIXED) }
+    var isRecurring by remember { mutableStateOf(editingBudget?.isRecurring ?: false) }
+    var startDate by remember { mutableStateOf(editingBudget?.startDate) }
+    var endDate by remember { mutableStateOf(editingBudget?.endDate) }
 
     // Goal fields
-    var deadline by remember { mutableStateOf<Date?>(null) }
-    var isActive by remember { mutableStateOf(true) }
+    var deadline by remember { mutableStateOf(editingGoal?.deadline) }
+    var isActive by remember { mutableStateOf(editingGoal?.isActive ?: true) }
 
     // For showing DatePicker
     var showDatePicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
 
     if (showDatePicker) {
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    val millis = datePickerState.selectedDateMillis
-                    if (millis != null) deadline = Date(millis)
-                    showDatePicker = false
-                }) { Text("OK") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
-            }
-        ) {
+        DatePickerDialog(onDismissRequest = { showDatePicker = false }, confirmButton = {
+            TextButton(onClick = {
+                val millis = datePickerState.selectedDateMillis
+                if (millis != null) deadline = Date(millis)
+                showDatePicker = false
+            }) { Text("OK") }
+        }, dismissButton = {
+            TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+        }) {
             DatePicker(state = datePickerState)
         }
     }
@@ -85,14 +105,25 @@ fun QuickAddSheet(
                 }) { Text("OK") }
             },
             dismissButton = {
-                TextButton(onClick = { datePickerTarget = DatePickerTarget.NONE }) { Text("Cancel") }
-            }
-        ) {
+                TextButton(onClick = {
+                    datePickerTarget = DatePickerTarget.NONE
+                }) { Text("Cancel") }
+            }) {
             DatePicker(state = datePickerState)
         }
     }
 
-
+    val isEditing = editingTransaction != null || editingGoal != null || editingBudget != null
+    val headerText = when {
+        editingTransaction != null -> "Edit Transaction"
+        editingGoal != null -> "Edit Goal"
+        editingBudget != null -> "Edit Budget"
+        else -> when (type) {
+            QuickAddType.INCOME, QuickAddType.EXPENSE -> "Add Transaction"
+            QuickAddType.GOAL -> "New Goal"
+            QuickAddType.BUDGET -> "New Budget"
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -104,29 +135,25 @@ fun QuickAddSheet(
                 QuickAddType.INCOME, QuickAddType.EXPENSE -> "Add Transaction"
                 QuickAddType.GOAL -> "New Goal"
                 QuickAddType.BUDGET -> "New Budget"
-            },
-            style = MaterialTheme.typography.titleLarge
+            }, style = MaterialTheme.typography.titleLarge
         )
 
         Spacer(Modifier.height(16.dp))
 
         // --- Transaction fields ---
-        if (type == QuickAddType.INCOME || type == QuickAddType.EXPENSE) {
+        if (type == QuickAddType.INCOME || type == QuickAddType.EXPENSE || editingTransaction != null) {
             // Toggle (Income / Expense)
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 FilterChip(
                     selected = isIncome,
                     onClick = { isIncome = true },
-                    label = { Text("Income") }
-                )
+                    label = { Text("Income") })
                 FilterChip(
                     selected = !isIncome,
                     onClick = { isIncome = false },
-                    label = { Text("Expense") }
-                )
+                    label = { Text("Expense") })
             }
 
             Spacer(Modifier.height(12.dp))
@@ -158,7 +185,7 @@ fun QuickAddSheet(
         }
 
         // --- Goal fields ---
-        if (type == QuickAddType.GOAL) {
+        if (type == QuickAddType.GOAL || editingGoal != null) {
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
@@ -191,24 +218,20 @@ fun QuickAddSheet(
                     IconButton(onClick = { showDatePicker = true }) {
                         Icon(Icons.Default.DateRange, contentDescription = "Pick date")
                     }
-                }
-            )
+                })
 
             Spacer(Modifier.height(8.dp))
 
             Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                 Checkbox(
-                    checked = isActive,
-                    onCheckedChange = { isActive = it }
-                )
+                    checked = isActive, onCheckedChange = { isActive = it })
                 Text("Active")
             }
         }
 
-
         // Budget ----------------------------
 
-        if (type == QuickAddType.BUDGET) {
+        if (type == QuickAddType.BUDGET || editingBudget != null) {
             OutlinedTextField(
                 value = category,
                 onValueChange = { category = it },
@@ -229,109 +252,93 @@ fun QuickAddSheet(
             )
 
             Spacer(Modifier.height(8.dp))
-        // Budget Type dropdown
-        var expanded by remember { mutableStateOf(false) }
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
-        ) {
-            OutlinedTextField(
-                value = budgetType.name,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text("Budget Type") },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
-            )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                BudgetType.values().forEach { typeOption ->
-                    DropdownMenuItem(
-                        text = { Text(typeOption.name) },
-                        onClick = {
+            // Budget Type dropdown
+            var expanded by remember { mutableStateOf(false) }
+            ExposedDropdownMenuBox(
+                expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                OutlinedTextField(
+                    value = budgetType.name,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Budget Type") },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = expanded, onDismissRequest = { expanded = false }) {
+                    BudgetType.values().forEach { typeOption ->
+                        DropdownMenuItem(text = { Text(typeOption.name) }, onClick = {
                             budgetType = typeOption
                             expanded = false
-                        }
-                    )
+                        })
+                    }
                 }
             }
+
+            Spacer(Modifier.height(8.dp))
+
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                Checkbox(
+                    checked = isRecurring, onCheckedChange = { isRecurring = it })
+                Text("Recurring")
+            }
+            OutlinedTextField(
+                value = startDate?.toString() ?: "",
+                onValueChange = {},
+                label = { Text("Start Date") },
+                readOnly = true,
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { datePickerTarget = DatePickerTarget.START }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Pick date")
+                    }
+                })
+            OutlinedTextField(
+                value = endDate?.toString() ?: "",
+                onValueChange = {},
+                label = { Text("End Date") },
+                readOnly = true,
+                modifier = Modifier.fillMaxWidth(),
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = true }) {
+                        Icon(Icons.Default.DateRange, contentDescription = "Pick date")
+                    }
+                })
         }
 
-        Spacer(Modifier.height(8.dp))
-
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            Checkbox(
-                checked = isRecurring,
-                onCheckedChange = { isRecurring = it }
-            )
-            Text("Recurring")
-        }
-        OutlinedTextField(
-            value = startDate?.toString() ?: "",
-            onValueChange = {},
-            label = { Text("Start Date") },
-            readOnly = true,
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                IconButton(onClick = { datePickerTarget = DatePickerTarget.START }) {
-                    Icon(Icons.Default.DateRange, contentDescription = "Pick date")
-                }
-            }
-        )
-        OutlinedTextField(
-            value = endDate?.toString() ?: "",
-            onValueChange = {},
-            label = { Text("End Date") },
-            readOnly = true,
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                IconButton(onClick = { showDatePicker = true }) {
-                    Icon(Icons.Default.DateRange, contentDescription = "Pick date")
-                }
-            }
-        )
-    }
-
-    Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
         // --- Buttons ---
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            TextButton(onClick = onCancel, ) { Text("Cancel", color = Color(0xFF2C8A5B) )}
-            Button(onClick = {
-                when (type) {
-                    QuickAddType.INCOME, QuickAddType.EXPENSE -> {
-                        onSaveTransaction(
-                            TransactionEntity(
+            TextButton(onClick = onCancel) { Text("Cancel", color = Color(0xFF2C8A5B)) }
+            Button(
+                onClick = {
+                    when {
+                        editingTransaction != null -> onSaveTransaction(
+                            editingTransaction.copy(
                                 title = title,
-                                date = Date(),
                                 category = category,
                                 amount = amount.toDoubleOrNull() ?: 0.0,
                                 isIncome = isIncome,
-                                type = if (isIncome) TransactionType.INCOME else TransactionType.EXPENSE,
-                                note = note.ifBlank { null }
+                                note = note
                             )
                         )
-                    }
-                    QuickAddType.GOAL -> {
-                        onSaveGoal(
-                            Goal(
+
+                        editingGoal != null -> onSaveGoal(
+                            editingGoal.copy(
                                 title = title,
                                 target = target.toDoubleOrNull() ?: 0.0,
                                 saved = saved.toDoubleOrNull() ?: 0.0,
-                                deadline = null,
-                                isActive = true
+                                deadline = deadline,
+                                isActive = isActive
                             )
                         )
-                    }
-                    QuickAddType.BUDGET -> {
-                        onSaveBudget(
-                            Budget(
+
+                        editingBudget != null -> onSaveBudget(
+                            editingBudget.copy(
                                 categoryName = category,
                                 limit = limit.toDoubleOrNull() ?: 0.0,
                                 spent = spent.toDoubleOrNull() ?: 0.0,
@@ -341,10 +348,46 @@ fun QuickAddSheet(
                                 endDate = endDate
                             )
                         )
+
+                        type == QuickAddType.INCOME || type == QuickAddType.EXPENSE -> {
+                            onSaveTransaction(
+                                TransactionEntity(
+                                title = title,
+                                date = Date(),
+                                category = category,
+                                amount = amount.toDoubleOrNull() ?: 0.0,
+                                isIncome = isIncome,
+                                type = if (isIncome) TransactionType.INCOME else TransactionType.EXPENSE,
+                                note = note.ifBlank { null }))
+                        }
+
+                        type == QuickAddType.GOAL -> {
+                            onSaveGoal(
+                                Goal(
+                                    title = title,
+                                    target = target.toDoubleOrNull() ?: 0.0,
+                                    saved = saved.toDoubleOrNull() ?: 0.0,
+                                    deadline = null,
+                                    isActive = true
+                                )
+                            )
+                        }
+
+                        type == QuickAddType.BUDGET -> {
+                            onSaveBudget(
+                                Budget(
+                                    categoryName = category,
+                                    limit = limit.toDoubleOrNull() ?: 0.0,
+                                    spent = spent.toDoubleOrNull() ?: 0.0,
+                                    type = budgetType,
+                                    isRecurring = isRecurring,
+                                    startDate = startDate,
+                                    endDate = endDate
+                                )
+                            )
+                        }
                     }
-                }
-            },
-                colors = ButtonDefaults.buttonColors(Color(0xFF2C8A5B))
+                }, colors = ButtonDefaults.buttonColors(Color(0xFF2C8A5B))
             ) {
                 Text("Save")
             }

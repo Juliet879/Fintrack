@@ -13,7 +13,7 @@ import javax.inject.Singleton
 @Singleton
 class FinanceRepository @Inject constructor(private val transactionDao: TransactionDao, private val budgetDao: BudgetDao, private val goalDao: GoalDao) {
     suspend fun addTransaction(transactionEntity: TransactionEntity) = transactionDao.insertTransaction(transactionEntity)
-    suspend fun updateTransaction(transactionEntity: TransactionEntity) = transactionDao.insertTransaction(transactionEntity)
+    suspend fun updateTransaction(transactionEntity: TransactionEntity) = transactionDao.updateTransaction(transactionEntity)
     suspend fun addBudget(budget: Budget) = budgetDao.insertBudget(budget)
     suspend fun addGoal(goal: Goal) = goalDao.insertGoal(goal)
 
