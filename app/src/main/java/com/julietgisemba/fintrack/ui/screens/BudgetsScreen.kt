@@ -41,7 +41,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.julietgisemba.fintrack.model.Budget
 import com.julietgisemba.fintrack.model.BudgetType
 import com.julietgisemba.fintrack.model.QuickAddType
-import com.julietgisemba.fintrack.model.TransactionEntity
 import com.julietgisemba.fintrack.ui.components.BalanceSummaryItem
 import com.julietgisemba.fintrack.ui.components.BudgetItem
 import com.julietgisemba.fintrack.ui.components.QuickAddSheet

@@ -1,6 +1,5 @@
 package com.julietgisemba.fintrack.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -26,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,13 +36,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.julietgisemba.fintrack.model.Budget
 import com.julietgisemba.fintrack.model.Goal
 import com.julietgisemba.fintrack.model.QuickAddType
 import com.julietgisemba.fintrack.ui.components.GoalItem
 import com.julietgisemba.fintrack.ui.components.QuickAddSheet
 import com.julietgisemba.fintrack.viewmodel.FinanceViewModel
-import java.text.SimpleDateFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

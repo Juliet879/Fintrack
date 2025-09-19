@@ -1,6 +1,5 @@
 package com.julietgisemba.fintrack.ui.screens
 
-import android.R.attr.onClick
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement

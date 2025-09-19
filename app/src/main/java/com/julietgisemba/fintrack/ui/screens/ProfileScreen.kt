@@ -38,7 +38,6 @@ import androidx.compose.ui.unit.sp
 import com.julietgisemba.fintrack.model.ProfileOverview
 import com.julietgisemba.fintrack.model.UserProfile
 import com.julietgisemba.fintrack.ui.components.ProfileItemView
-import com.julietgisemba.fintrack.ui.components.TransactionItem
 import com.julietgisemba.fintrack.ui.components.UserProfileItem
 
 @OptIn(ExperimentalMaterial3Api::class)

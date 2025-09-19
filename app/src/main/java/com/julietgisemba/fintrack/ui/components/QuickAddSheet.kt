@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -113,7 +112,6 @@ fun QuickAddSheet(
         }
     }
 
-    val isEditing = editingTransaction != null || editingGoal != null || editingBudget != null
     val headerText = when {
         editingTransaction != null -> "Edit Transaction"
         editingGoal != null -> "Edit Goal"
@@ -131,11 +129,7 @@ fun QuickAddSheet(
             .padding(16.dp)
     ) {
         Text(
-            text = when (type) {
-                QuickAddType.INCOME, QuickAddType.EXPENSE -> "Add Transaction"
-                QuickAddType.GOAL -> "New Goal"
-                QuickAddType.BUDGET -> "New Budget"
-            }, style = MaterialTheme.typography.titleLarge
+            text = headerText, style = MaterialTheme.typography.titleLarge
         )
 
         Spacer(Modifier.height(16.dp))
