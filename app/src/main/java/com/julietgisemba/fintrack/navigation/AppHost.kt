@@ -13,14 +13,18 @@ import androidx.navigation.compose.composable
 import com.julietgisemba.fintrack.ui.screens.BudgetsScreen
 import com.julietgisemba.fintrack.ui.screens.DashboardScreen
 import com.julietgisemba.fintrack.ui.screens.GoalsScreen
+import com.julietgisemba.fintrack.ui.screens.LoginScreen
 import com.julietgisemba.fintrack.ui.screens.ProfileScreen
+import com.julietgisemba.fintrack.ui.screens.SignUpScreen
 import com.julietgisemba.fintrack.ui.screens.TransactionsScreen
 import com.julietgisemba.fintrack.viewmodel.FinanceViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(navController: NavHostController, modifier: Modifier, viewModel: FinanceViewModel) {
-    NavHost(navController = navController, startDestination = Destinations.Dashboard.route, modifier = modifier) {
+    NavHost(navController = navController, startDestination = Destinations.Login.route, modifier = modifier) {
+        composable(Destinations.Login.route) { LoginScreen(navController) }
+        composable(Destinations.SignUp.route) { SignUpScreen(navController) }
         composable(Destinations.Dashboard.route) { DashboardScreen() }
         composable(Destinations.Transactions.route) { TransactionsScreen() }
         composable(Destinations.Budgets.route) { BudgetsScreen() }

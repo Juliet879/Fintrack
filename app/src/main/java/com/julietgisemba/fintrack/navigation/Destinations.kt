@@ -9,7 +9,9 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.chromium.base.Flag
 
-sealed class Destinations(val route: String, val label: String, val icon: ImageVector) {
+sealed class Destinations(val route: String, val label: String, val icon: ImageVector? = null) {
+    object Login: Destinations("login", "Login")
+    object SignUp: Destinations("signup", "SignUp")
     object Dashboard: Destinations("dashboard", "Dashboard", Icons.Default.Home)
     object Transactions: Destinations("transactions", "Transactions", Icons.Default.List)
     object Budgets: Destinations("budgets", "Budgets", Icons.Default.DateRange)

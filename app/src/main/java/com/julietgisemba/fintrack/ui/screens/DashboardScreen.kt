@@ -120,7 +120,7 @@ fun DashboardScreen(viewModel: FinanceViewModel = hiltViewModel()) {
             DashboardCard(
                 totalBalance = transactions.filter { it.isIncome }.sumOf { it.amount } + transactions.filter { !it.isIncome }.sumOf { it.amount },
                 income = transactions.filter { it.isIncome }.sumOf { it.amount },
-                spent = transactions.filter { !it.isIncome }.sumOf { it.amount },
+                spent = transactions.filter { !it.isIncome }.sumOf { it.amount } ,
                 saved = goals.sumOf { it.saved },
                 progress = progress,
                 goalText = goalText

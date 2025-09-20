@@ -24,7 +24,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -50,7 +49,7 @@ fun DashboardCard(
         ) {
             Text("Total balance", fontSize = 14.sp, color = Color.Gray)
             Text(
-                "$${String.format(Locale.getDefault(), "%,.2f", totalBalance)}",
+                "$${String.format("%,.2f", totalBalance)}",
                 fontSize = 28.sp, fontWeight = FontWeight.Bold
             )
             Spacer(Modifier.height(8.dp))
@@ -64,7 +63,7 @@ fun DashboardCard(
                 InfoBox("Saved", saved)
             }
             Spacer(Modifier.height(15.dp))
-            Text("Savings goal progress ${String.format(Locale.getDefault(),"%.0f", progress * 100)}%", fontSize = 14.sp, color = Color.Gray)
+            Text("Savings goal progress ${String.format("%.0f", progress * 100)}%", fontSize = 14.sp, color = Color.Gray)
             Spacer(Modifier.height(5.dp))
             LinearProgressIndicator(
             progress = { progress },
@@ -97,6 +96,6 @@ fun InfoBox(label: String, amount: Double) {
     )
     {
         Text(label, fontSize = 14.sp, color = Color.Gray)
-        Text("$${String.format(Locale.getDefault(), "%,.2f", amount)}", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+        Text("$${String.format("%,.2f", amount)}", fontSize = 16.sp, fontWeight = FontWeight.Bold)
     }
 }

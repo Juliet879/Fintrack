@@ -49,14 +49,6 @@ class MainActivity : ComponentActivity() {
                     BottomBar(navController = navController, destinations = items)
                 }
             ) { innerPadding ->
-//                if (quickAddController.quickAddData != null) {
-//                    ModalBottomSheet(
-//                        sheetState = sheetState,
-//                        onDismissRequest = { quickAddController.quickAddData = null }
-//                    ) {
-//
-//                    }
-//                }
                 AppNavHost(
                     navController = navController,
                     modifier = Modifier.padding(innerPadding),

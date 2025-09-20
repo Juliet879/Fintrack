@@ -30,8 +30,8 @@ fun BottomBar(navController: NavController, destinations: List<Destinations>) {
                         restoreState = true
                     }
                 },
-                icon = { Icon(screen.icon, contentDescription = screen.label) },
-                label = { Text(screen.label,         maxLines = 1,) },
+                icon = { screen.icon?.let { Icon(it, contentDescription = screen.label) } },
+                label = { Text(screen.label, maxLines = 1) },
                 colors = NavigationBarItemDefaults.colors(
                     indicatorColor = Color(0x334CAF50)
                 )
