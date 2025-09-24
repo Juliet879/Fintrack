@@ -1,6 +1,7 @@
 package com.julietgisemba.fintrack.ui.screens
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -35,14 +36,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.julietgisemba.fintrack.model.ProfileOverview
 import com.julietgisemba.fintrack.model.UserProfile
+import com.julietgisemba.fintrack.navigation.Destinations
 import com.julietgisemba.fintrack.ui.components.ProfileItemView
 import com.julietgisemba.fintrack.ui.components.UserProfileItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(navController1: NavHostController) {
     val user = UserProfile(
         name = "Alex Carter",
         email = "alex.carter@example.com",
@@ -137,6 +141,20 @@ fun ProfileScreen() {
                     supportItems.forEach { item ->
                         ProfileItemView(item, false)
                     }
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(0.3.dp, Color.Gray),
+                modifier = Modifier.padding(20.dp)
+            ) {
+                Column {
+                    Text("Logout", fontWeight = FontWeight.Bold, modifier = Modifier.clickable{
+                        navController1.navigate(
+                            Destinations.Login.route
+                        )
+                    }.padding(30.dp))
                 }
             }
         }

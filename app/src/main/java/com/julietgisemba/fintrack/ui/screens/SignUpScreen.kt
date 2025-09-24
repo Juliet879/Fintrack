@@ -13,7 +13,9 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -58,6 +60,8 @@ fun SignUpScreen(navController: NavController) {
                 .padding(innerPadding)
                 .padding(15.dp, 0.dp, 10.dp)
         ) {
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            Spacer(Modifier.height(60.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
                 Icon(
                     painter = painterResource(R.drawable.app_icon),
@@ -118,6 +122,7 @@ fun SignUpScreen(navController: NavController) {
                 }
 
                 Button(onClick = {},
+                    modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(Color(0xFF2C8A5B))
                 ) {
                     Row {
@@ -127,8 +132,8 @@ fun SignUpScreen(navController: NavController) {
                 }
 
                 Row {
-                    Text("Already have an account ?")
-                    Text("SignUp", color = Color(0xFF2C8A5B), modifier = Modifier.clickable {
+                    Text("Already have an account ?   ", fontWeight = FontWeight.Light)
+                    Text("Login", fontWeight = FontWeight.Medium, color = Color(0xFF2C8A5B), modifier = Modifier.clickable {
                         navController.navigate(
                             Destinations.Login.route
                         )

@@ -74,7 +74,10 @@ fun DashboardScreen(viewModel: FinanceViewModel = hiltViewModel()) {
     } else 0f
 
     val goalText =
-        "$" + String.format("%,.0f", goals.sumOf { it.saved }) + " / $" + String.format("%,.0f", goalSumTarget)
+        "$" + String.format("%,.0f", goals.sumOf { it.saved }) + " / $" + String.format(
+            "%,.0f",
+            goalSumTarget
+        )
 
     Scaffold(
         topBar = {
@@ -118,9 +121,10 @@ fun DashboardScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") })
             Spacer(Modifier.height(10.dp))
             DashboardCard(
-                totalBalance = transactions.filter { it.isIncome }.sumOf { it.amount } + transactions.filter { !it.isIncome }.sumOf { it.amount },
+                totalBalance = transactions.filter { it.isIncome }
+                    .sumOf { it.amount } + transactions.filter { !it.isIncome }.sumOf { it.amount },
                 income = transactions.filter { it.isIncome }.sumOf { it.amount },
-                spent = transactions.filter { !it.isIncome }.sumOf { it.amount } ,
+                spent = transactions.filter { !it.isIncome }.sumOf { it.amount },
                 saved = goals.sumOf { it.saved },
                 progress = progress,
                 goalText = goalText
@@ -143,13 +147,19 @@ fun DashboardScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                 modifier = Modifier
             ) {
                 Column {
-                    transactions.take(3).forEach { transaction ->
-                        TransactionItem(transaction,
-                            onClick = {
-                                editingTransaction = transaction
-                                currentType = if (transaction.isIncome) QuickAddType.INCOME else QuickAddType.EXPENSE
-                                showSheet = true
-                        })
+                    if (transactions.isEmpty()) {
+                        Text("No transactions available", fontWeight = FontWeight.Light)
+                    } else {
+                        transactions.take(3).forEach { transaction ->
+                            TransactionItem(
+                                transaction,
+                                onClick = {
+                                    editingTransaction = transaction
+                                    currentType =
+                                        if (transaction.isIncome) QuickAddType.INCOME else QuickAddType.EXPENSE
+                                    showSheet = true
+                                })
+                        }
                     }
                 }
             }
@@ -163,14 +173,18 @@ fun DashboardScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                 modifier = Modifier
             ) {
                 Column {
-                    budgets.take(3).forEach { budget ->
-                        BudgetItem(
-                            budget.icon,
-                            budget.categoryName,
-                            budget.spent,
-                            budget.limit,
-                            (budget.spent / budget.limit).toFloat()
-                        )
+                    if (budgets.isEmpty()) {
+                        Text("No budgets available", fontWeight = FontWeight.Light)
+                    } else {
+                        budgets.take(3).forEach { budget ->
+                            BudgetItem(
+                                budget.icon,
+                                budget.categoryName,
+                                budget.spent,
+                                budget.limit,
+                                (budget.spent / budget.limit).toFloat()
+                            )
+                        }
                     }
                 }
             }
@@ -184,8 +198,12 @@ fun DashboardScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                 modifier = Modifier
             ) {
                 Column {
-                    goals.take(3).forEach { goal ->
-                        GoalItem(goal)
+                    if (goals.isEmpty()) {
+                        Text("No goals available", fontWeight = FontWeight.Light)
+                    } else {
+                        goals.take(3).forEach { goal ->
+                            GoalItem(goal)
+                        }
                     }
                 }
             }
@@ -210,7 +228,7 @@ fun DashboardScreen(viewModel: FinanceViewModel = hiltViewModel()) {
                             transaction.type,
                             transaction.note
                         )
-                }
+                    }
                     editingTransaction = null
                     showSheet = false
                 },

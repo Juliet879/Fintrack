@@ -14,7 +14,9 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -57,6 +59,8 @@ fun LoginScreen(navController: NavController) {
                 .padding(innerPadding)
                 .padding(15.dp, 0.dp, 10.dp)
         ) {
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            Spacer(Modifier.height(60.dp))
             Row(modifier = Modifier.fillMaxWidth()) {
                 Icon(
                     painter = painterResource(R.drawable.app_icon),
@@ -64,7 +68,7 @@ fun LoginScreen(navController: NavController) {
                 )
                 Spacer(Modifier.width(10.dp))
                 Column {
-                    Text("Welcome back", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color(0xFF2C8A5B))
+                    Text("Welcome back", fontWeight = FontWeight.Bold, fontSize = 22.sp, color = Color(0xFF2C8A5B))
                     Text(
                         "Sign in to view your finances",
                         fontWeight = FontWeight.Light,
@@ -97,6 +101,7 @@ fun LoginScreen(navController: NavController) {
             }
 
             Button(
+                modifier = Modifier.fillMaxWidth(),
                 onClick = {
                     navController.navigate(
                         Destinations.Dashboard.route
@@ -111,7 +116,7 @@ fun LoginScreen(navController: NavController) {
             }
 
             Row {
-                Text("Already have an account ?")
+                Text("Don't have an account ?  ")
                 Text("SignUp", color = Color(0xFF2C8A5B), modifier = Modifier.clickable {
                     navController.navigate(
                         Destinations.SignUp.route
