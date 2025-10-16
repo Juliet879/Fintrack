@@ -4,18 +4,19 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     id("com.google.dagger.hilt.android")
     kotlin("kapt")
+    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
-    namespace = "com.julietgisemba.fintrack"
+    namespace = "com.julietgisemba.kipesa"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.julietgisemba.fintrack"
-        minSdk = 30
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        applicationId = "com.julietgisemba.kipesa"
+        minSdk = 26
+        targetSdk = 34
+        versionCode = 4
+        versionName = "4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -39,6 +40,11 @@ android {
     buildFeatures {
         compose = true
     }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
 }
 
 dependencies {
@@ -54,6 +60,11 @@ dependencies {
     implementation(libs.cronet.embedded)
     implementation(libs.ui)
     implementation(libs.material3)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

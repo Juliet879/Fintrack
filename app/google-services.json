@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1007036234787",
+    "project_id": "kipesa-78d10",
+    "storage_bucket": "kipesa-78d10.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1007036234787:android:7b49a05b3de95fe4324596",
+        "android_client_info": {
+          "package_name": "com.julietgisemba.kipesa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcGIf8-spujBpOjUhGK2Gjz7zJRq4BFLk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

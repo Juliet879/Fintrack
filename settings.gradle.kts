@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "FinTrack"
+rootProject.name = "Kipesa"
 include(":app")
  

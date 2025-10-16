@@ -1,0 +1,209 @@
+package com.julietgisemba.kipesa.ui.screens
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DividerDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.julietgisemba.kipesa.model.Budget
+import com.julietgisemba.kipesa.model.BudgetType
+import com.julietgisemba.kipesa.model.QuickAddType
+import com.julietgisemba.kipesa.ui.components.BalanceSummaryItem
+import com.julietgisemba.kipesa.ui.components.BudgetItem
+import com.julietgisemba.kipesa.ui.components.QuickAddSheet
+import com.julietgisemba.kipesa.viewmodel.FinanceViewModel
+import kotlin.math.roundToInt
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BudgetsScreen(viewModel: FinanceViewModel = hiltViewModel()) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var showSheet by remember { mutableStateOf(false) }
+    var currentType by remember { mutableStateOf(QuickAddType.BUDGET) }
+    val budgets by viewModel.budgetList.collectAsState()
+    var editingBudget by remember { mutableStateOf<Budget?>(null) }
+
+
+    val fixedBudgets = budgets.filter { it.type == BudgetType.FIXED }
+    val upcomingBudgets = budgets.filter { it.type == BudgetType.UPCOMING }
+
+    val planned = budgets.sumOf { it.limit }
+    val spent = budgets.sumOf { it.spent }
+    val remaining = planned - spent
+
+    Scaffold(topBar = {
+        TopAppBar(title = {
+            Text(
+                text = "Budgets", fontWeight = FontWeight.Bold
+            )
+        }, actions = {
+            Button(
+                onClick = {}, colors = ButtonDefaults.buttonColors(Color(0xFF2C8A5B))
+            ) {
+                Text("+ Add")
+            }
+        })
+    }, containerColor = Color(0x54EFFBF6), floatingActionButton = {
+        FloatingActionButton(
+            onClick = { showSheet = true },
+            containerColor = Color(0xFF2C8A5B),
+            contentColor = Color.White
+        ) {
+            Icon(Icons.Default.Add, contentDescription = "Quick Add")
+        }
+    }) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .padding(15.dp, 0.dp)
+                .padding(innerPadding)
+        ) {
+            HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
+            Spacer(Modifier.height(10.dp))
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(0.4.dp, Color.Gray),
+                modifier = Modifier
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                ) {
+                    BalanceSummaryItem("Planned", planned)
+                    BalanceSummaryItem("Spent", spent)
+                    BalanceSummaryItem("Remaining", remaining)
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+
+            Text("This month", fontSize = 20.sp, fontWeight = FontWeight.Medium)
+
+            Spacer(Modifier.height(20.dp))
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(0.3.dp, Color.Gray),
+                modifier = Modifier
+            ) {
+                LazyColumn(modifier = Modifier.padding(12.dp)) {
+                    items(upcomingBudgets) { budget ->
+                        BudgetItem(
+                            budget.icon,
+                            budget.categoryName,
+                            budget.spent,
+                            budget.limit,
+                            (budget.spent / budget.limit).toFloat(),
+                            false,
+                            "$${(budget.limit - budget.spent).roundToInt()} left",
+                            onClick = {
+                                editingBudget = budget
+                                showSheet = true
+                            }
+
+                            )
+                    }
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+
+            Text("Fixed Budget", fontSize = 20.sp, fontWeight = FontWeight.Medium)
+
+            Spacer(Modifier.height(20.dp))
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                border = BorderStroke(0.3.dp, Color.Gray),
+                modifier = Modifier
+            ) {
+                LazyColumn(modifier = Modifier.padding(12.dp)) {
+                    items(fixedBudgets) { budget ->
+                        BudgetItem(
+                            budget.icon,
+                            budget.categoryName,
+                            budget.spent,
+                            budget.limit,
+                            (budget.spent / budget.limit).toFloat(),
+                            false,
+                            "$${(budget.limit - budget.spent).roundToInt()} left",
+                            onClick = {
+                                editingBudget = budget
+                                showSheet = true
+                            }
+                            )
+                    }
+                }
+            }
+
+        }
+    }
+
+    if (showSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showSheet = false }, sheetState = sheetState
+        ) {
+            QuickAddSheet(type = currentType, editingBudget = editingBudget, onSaveTransaction = { transaction ->
+                viewModel.addTransaction(
+                    transaction.amount,
+                    transaction.title,
+                    transaction.category,
+                    transaction.type,
+                    transaction.note
+                )
+                showSheet = false
+            }, onSaveGoal = { goal ->
+                viewModel.addGoal(goal.title, goal.target, goal.saved, goal.deadline)
+                showSheet = false
+            }, onSaveBudget = { budget ->
+                if (editingBudget != null) {
+                    // Add new
+                    viewModel.updateBudget(budget)
+                } else {
+                    viewModel.addBudget(
+                        budget.categoryName,
+                        budget.limit,
+                        budget.spent,
+                        budget.type,
+                        budget.isRecurring,
+                        budget.startDate,
+                        budget.endDate
+                    )
+                }
+                showSheet = false
+                editingBudget = null
+            }, onCancel = { showSheet = false })
+
+        }
+    }
+}
